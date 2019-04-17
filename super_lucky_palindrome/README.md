@@ -1,6 +1,6 @@
-The original problem : https://www.spoj.com/problems/CTPLUCKY/ \
+The original problem : https://www.spoj.com/problems/CTPLUCKY/
 
-Here you'll find 3 versions (I'm planning for a forth one) \
+Here you'll find 3 versions (I'm planning for a forth one)
 
 v1 : Naive solution \
 Not optimized at all. Just do its job. \
