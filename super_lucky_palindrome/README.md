@@ -50,3 +50,9 @@ The problem is that when number are too big, float numbers that I get from the b
  \
 This is the reason I'll try to work on a v4 that will store digits in array and process calculus from there. \
 That way I'll remain exact on my results to the cost of some longer executions.
+
+22h45 : 17 March 2019 \
+v4 is done \
+Algorithm is done \
+Everything is done and complete \
+I never expected the algorithm to be this fast. It's really incredible. Thanks python to have no limits of digits with your integers \
