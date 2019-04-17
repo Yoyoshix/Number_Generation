@@ -15,8 +15,7 @@ def possibilities(length):
         if is_lucky(x*2+is_odd) == 1 or is_lucky(x*2) == 1 or is_lucky(length-x*2-is_odd) == 1 or is_lucky(length-x*2) == 1:
             pair.append(x)
     for i in pair:
-        tmp = scipy.special.binom(limit, i)
-        total += tmp
+        total += scipy.special.binom(limit, i)
     print(length, pair, int(total))
     return total
 
