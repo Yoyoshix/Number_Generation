@@ -1,3 +1,8 @@
+"""
+I fixed the line 36 after I detected there was a mistake working with float numbers because they were not precise enough
+the original code I worked with was wrong but I fixed it for github
+"""
+
 import scipy.special
 
 #return 1 if number is a lucky number
