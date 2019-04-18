@@ -1,34 +1,49 @@
 import scipy.special
-import copy
 
 def get_comb(length, pair, offset=0):
-    for i in range(len(pair)):
-        pair[i] -= offset
     comb = []
     for pos in range(1, length+1):
         total = 0
         for i in pair:
+            i -= offset
             if i <= pos:
-                total += scipy.special.binom(pos, i)
+                total += scipy.special.comb(pos, i, exact=True)
         comb.append(total)
     return comb
 
-def recurs(res, cursor, pos, pair, depth):
-    if cursor < 0:
-        return "".join(res[::-1])
+def solve(length, pair, cursor):
+    if cursor >= get_comb(length, pair)[-1] or cursor < 0:
+        return None
+    
+    res = ["0"] * length
+    pos = 0
+    amount = 0
+    
+    while cursor > 0:
+        comb = get_comb(length, pair, amount)
+        idx = 0
+        while idx < len(comb) and cursor >= comb[idx]:
+            idx += 1
+        res[idx] = "1"
+        
+        if idx > 0:
+            cursor -= comb[idx-1]
+        else:
+            break
+        length = idx
+        amount += 1
+    
     if cursor == 0:
         idx = 0
-        while pair[idx] < depth:
+        while pair[idx] < amount:
             idx += 1
-        min_pair = pair[idx] - depth
-        for i in range(min_pair):
+        for i in range(pair[idx] - amount):
             res[i] = "1"
-        return "".join(res[::-1])
-    length = len(res) - pos
-    comb = get_comb(length, copy.copy(pair), depth)
-    idx = 0
-    while idx < len(comb) and cursor >= comb[idx]:
-        idx += 1
-    res[idx] = "1"
-    cursor -= comb[idx-1]
-    return recurs(res, cursor, len(res) - idx, pair, depth + 1)
+    
+    return "".join(res[::-1])
+
+
+length = 4
+pair = [2,3,4]
+for cursor in range(get_comb(length, pair)[-1]):
+    print(solve(length, pair, cursor), cursor)
