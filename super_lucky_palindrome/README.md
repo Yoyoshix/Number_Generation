@@ -55,3 +55,6 @@ That way I'll remain exact on my results to the cost of some longer executions.
 v4 is done \
 Algorithm is done \
 I never expected the algorithm to be this fast (he can get the 10^100th input in 5sec). It's really incredible. Thanks python to have no limits of digits with your integers
+
+3 May 2019 \
+v5 is done, I've optimized v4 by a little bit and added some features
