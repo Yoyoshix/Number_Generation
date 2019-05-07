@@ -1,127 +1,90 @@
+import scipy.special
+
 class lucky_v4():
     def __init__(self):
         self.query = 0
-        self.limit = 0 #length//2, useful here and there
-        self.pair = [] #store the pair numbers
-        self.seven_amount = 0 #the amount of seven needed to know if the middle digit of odd length palindrom is 4 or 7
-        self.solution = "" #store solution
-    
-    def is_lucky(self, length):
-        if any(x in str(length) for x in "01235689"):
+        self.seven = 0
+        self.solution = ""
+        
+    def is_lucky(self, number): #detect if number is a lucky number
+        if any(x in str(number) for x in "01235689"):
             return 0
         return 1
     
-    def get_pair(self, length):
+    def get_length_from_index(self, index): #create correct SLP length
+        binary = "{0:b}".format(index+2)
+        res = ""
+        for idx, i in enumerate(binary[1:]):
+            res += "4" if i == "0" else "7"
+        return int(res)
+    
+    def get_palindrome_pair(self, length):
         pair = []
         is_odd = length % 2
         limit = length // 2
         total = 0
         for x in range(0, limit+1):
-            #Need to *2 because we will process only one side of palindrome
             if self.is_lucky(x*2+is_odd) == 1 or self.is_lucky(x*2) == 1 or \
             self.is_lucky(length-x*2-is_odd) == 1 or self.is_lucky(length-x*2) == 1:
                 pair.append(x)
         return pair
     
-    def fact(self, n):
-        if n == 0:
-            return 1
-        res = 1
-        while n > 1:
-            res *= n
-            n -= 1
-        return res
-
-    def binomial(self, n, k):
-        return self.fact(n) // (self.fact(k) * self.fact(n-k))
+    def get_possibilities(self, length, pair): #return the amount of possibilities
+        total = 0
+        for i in pair:
+            total += scipy.special.comb(length, i, exact=True)
+        return total
     
-    def get_lucky_from_index(self, index):
-        binary = "{0:b}".format(index+2)
-        res = 0
-        for idx, i in enumerate(binary[1:]):
-            res += (4 if i == "0" else 7) * 10**(len(binary)-idx-2)
-        return res
+    def generate(self, query, pair_numbers, length):
+        pair = pair_numbers
+        space = length
+        self.solution = ["4"] * length
+        self.seven = 0 #we assume that the solution is filled by "4" where some of "4" will be replaced by "7"
         
-    def get_solution(self, query):
-        index = 0
+        idx = space
         while query > 0:
-            total = 0
-            length = self.get_lucky_from_index(index)
-            self.limit = length // 2                  #get half the length because palindrom
-            self.pair = self.get_pair(length)
-            for i in self.pair:
-                total += self.binomial(self.limit, i)
-            query -= total
-            index += 1
+            remove = query + 1
+            while idx >= 0 and query < remove: #get the correct idx.
+                remove = self.get_possibilities(idx, pair)
+                idx -= 1
+            self.solution[idx+1] = "7"
+            self.seven += 1
+            query -= remove #decrease the value of query by the amount of useless solutions
+            space = idx
+            for i in range(len(pair)): #update pair numbers
+                pair[i] -= 1
+            if pair[0] < 0: #delete because useless
+                del pair[0]
         
-        query += total
-        query -= 1 #offset of 1 because there is a difference between input value and the one used in the algorithm
-        self.seven_amount = 0
-        self.solution = ["4"] * self.limit
-        
-        self.slp_algorithm(query) #everything
-        
-        if length%2 == 0:
-            self.solution = self.solution[::-1] + self.solution
-        else: #we do this because if number is odd we need to fill the middle of the palindrom
-            if self.is_lucky(self.seven_amount*2+1) == 1 or self.is_lucky((self.limit-self.seven_amount)*2) == 1:
-                self.solution = self.solution[::-1] + ["7"] + self.solution
-            else:
-                self.solution = self.solution[::-1] + ["4"] + self.solution
-        
-        return "".join(self.solution)
-
-    def get_comb(self, length, offset=0):
-        """ return the combination array depending of length and self.pair
-        offset is used to decrease the value in pair array to create a better generic function
-        
-        combination (or comb) array works like this :
-        for each index inside length we calculate the amount of possible combination that exists
-        we simply use the binomial coeficient to get the values
-        if parameters are wrong it stores 0 at current index
-        
-        Exemple : if length = 4 and pair = [2,3,4]
-        The possibilities are : 0011, 0101, 0110, 0111, 1001, 1010, 1011, 1100, 1101, 1110, 1111 (11 possibilities)
-        The comb array will return : [0,1,4,11]
-        
-        Why ? Let's explain step by step
-        "0" in the current comb array means that there is no possibility to place our 1's within a length of 1
-            "length of 1" is determine by the index of the value +1 ("0" is at index 0, so we add +1)
-            
-        "1" means that within a length of 2 we can have one possibility to place the 1's
-            possibility is : 11 (we then add 0s at the start because we need to return a string of 4 digits)
-            
-        "4" means that there is 4 possibilities within a length of 3
-            possibilities are : 011, 101, 110, 111
-        
-        "11" (the last value in array) gives the amount of all possibilites with the length of 4
-        """
-        comb = []
-        for pos in range(1, length+1):
-            total = 0
-            for i in self.pair:
-                i -= offset
-                if i <= pos:
-                    total += self.binomial(pos, i)
-            comb.append(total)
-        return comb
-    
-    def slp_algorithm(self, cursor, pos=0, depth=0): #See top of file to better understand the algorithm
-        if self.pair[0] - depth < 0: #update if the amount of seven is higher than the least pair value
-            del self.pair[0]
-        if cursor < 0: #a simple exception (it happens when all 7s are everywhere)
-            return
-        if cursor == 0: #if we're here, all remaining 7s to put will be placed at the beginning of the string
-            for i in range(self.pair[0] - depth):
+        if query == 0: #here we put the rest of "7" that needs to be added
+            for i in range(pair[0]):
                 self.solution[i] = "7"
-                self.seven_amount += 1
-            return
+                self.seven += 1
+                
+        self.solution = "".join(self.solution)
+        return self.solution
         
-        comb = self.get_comb(self.limit - pos, depth) #get the comb array
-        idx = 0
-        while idx < self.limit - depth and cursor >= comb[idx]: #self.limit - pos = len(comb), so it's FASTER
-            idx += 1
-        self.solution[idx] = "7" #place the 7 at current index
-        self.seven_amount += 1
-        cursor -= comb[idx-1] #we update the value of cursor
-        self.slp_algorithm(cursor, self.limit - idx, depth + 1)
+    def get_solution(self, query): #let's go
+        self.query = query
+        
+        index = 0
+        while self.query > 0: #we need to know the length of the solution
+            length = self.get_length_from_index(index) #we first get the length of out current lucky number
+            pair = self.get_palindrome_pair(length) #we determine the pair numbers of the length
+            limit = length // 2
+            total = self.get_possibilities(limit, pair) #we calculate how much possibilities exist
+            self.query -= total
+            index += 1
+        self.query += total - 1       #go back one step to know what is the real query
+        
+        self.generate(self.query, pair, limit) #everything
+        
+        if length%2 == 0: #we create the whole number from one side of it
+            self.solution = self.solution[::-1] + self.solution
+        else:                                        #we determine what is the value of the middle digit
+            if self.is_lucky(self.seven*2 + 1) == 1 or self.is_lucky((limit - self.seven)*2) == 1:
+                self.solution = self.solution[::-1] + "7" + self.solution
+            else:
+                self.solution = self.solution[::-1] + "4" + self.solution
+        
+        return self.solution
