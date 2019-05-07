@@ -1,2 +1,1 @@
-# combination_index
-Get number from index with digits limitation by the help of combination formulas
+# Super Lucky Palindrome (and other linked algorithm)
