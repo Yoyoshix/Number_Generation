@@ -1,5 +1,4 @@
 import scipy.special
-import time
 
 class lucky_v3():
     def __init__(self):
